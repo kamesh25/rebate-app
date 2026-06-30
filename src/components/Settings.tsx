@@ -52,7 +52,7 @@ export default function Settings({ onClose, totalSaved }: { onClose: () => void;
 
         {/* About */}
         <Section title="About">
-          <Row icon="🔒" label="Privacy Policy" value="→" onTap={() => window.open('https://returnit.app/privacy', '_blank')} />
+          <Row icon="🔒" label="Privacy Policy" value="→" onTap={() => window.open('https://returnit-theta.vercel.app/privacy', '_blank')} />
           <Row label="Version" value="1.0.0" />
         </Section>
 
