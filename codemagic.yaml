@@ -11,6 +11,11 @@ workflows:
       # Codemagic dashboard (Teams > Integrations > App Store Connect)
 
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.kamesh.returnit
+        # ^ matches the .p12 + .mobileprovision uploaded in
+        # Codemagic under Code signing identities
       vars:
         BUNDLE_ID: "com.kamesh.returnit"
         XCODE_PROJECT: "ios/App/App.xcodeproj"
@@ -37,15 +42,9 @@ workflows:
       - name: Sync Capacitor iOS project
         script: npx cap sync ios
 
-      - name: Set up keychain for code signing
-        script: keychain initialize
-
-      # Certificate (.p12) and provisioning profile (.mobileprovision) are
-      # uploaded manually in Codemagic: App settings > Code signing identities.
-      # Codemagic injects them automatically — no fetch step needed.
-      - name: Add certificates to keychain
-        script: keychain add-certificates
-
+      # Keychain setup + certificate/profile injection is handled
+      # automatically by the `ios_signing` block above — no manual
+      # keychain scripts needed.
       - name: Set up code signing
         script: xcode-project use-profiles
 
