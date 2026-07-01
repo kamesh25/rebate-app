@@ -1,0 +1,69 @@
+workflows:
+  ios-workflow:
+    name: ReturnIt iOS Build
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: codemagic_api_key
+      # ^ this name must exactly match the name you give the
+      # App Store Connect integration when you add it in the
+      # Codemagic dashboard (Teams > Integrations > App Store Connect)
+
+    environment:
+      vars:
+        BUNDLE_ID: "com.kamesh.returnit"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
+        APP_STORE_APPLE_ID: 0  # fill in once the app exists in App Store Connect
+      node: 20
+      xcode: latest
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+
+    scripts:
+      - name: Install npm dependencies
+        script: npm ci
+
+      - name: Build web app
+        script: npm run build
+
+      - name: Sync Capacitor iOS project
+        script: npx cap sync ios
+
+      - name: Set up code signing
+        script: xcode-project use-profiles
+
+      - name: Increment build number
+        script: |
+          cd ios/App
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$BUNDLE_ID") || LATEST_BUILD_NUMBER=0
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+
+      - name: Build .ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      email:
+        recipients:
+          - kamesh.manikonda@gmail.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
