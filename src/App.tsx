@@ -274,7 +274,10 @@ export default function App() {
 
       {/* Undo toast */}
       {undoItem && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 shadow-xl z-40 whitespace-nowrap">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 shadow-xl z-40 whitespace-nowrap"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 6rem)' }}
+        >
           <span className="text-slate-300 text-sm">Return deleted</span>
           <button onClick={handleUndo} className="text-indigo-400 font-bold text-sm hover:text-indigo-300 transition">Undo</button>
         </div>
@@ -282,7 +285,10 @@ export default function App() {
 
       {/* Add buttons */}
       {addMode === 'none' ? (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-30">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 flex gap-3 z-30"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
+        >
           <button
             onClick={() => setAddMode('return')}
             className="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-6 py-4 rounded-full shadow-xl shadow-indigo-900/50 transition flex items-center gap-2 whitespace-nowrap"

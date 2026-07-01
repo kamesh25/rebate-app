@@ -34,7 +34,10 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
   const s = steps[step]
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-between px-6 py-16">
+    <div
+      className="min-h-screen bg-slate-950 flex flex-col items-center justify-between px-6 pt-16"
+      style={{ paddingBottom: 'max(4rem, calc(env(safe-area-inset-bottom) + 2rem))' }}
+    >
       {/* Progress dots */}
       <div className="flex gap-2">
         {steps.map((_, i) => (
