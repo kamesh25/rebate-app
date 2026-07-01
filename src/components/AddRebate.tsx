@@ -62,8 +62,8 @@ export default function AddRebate({ onAdd, onClose }: Props) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onClick={onClose}>
       <div
-        className="bg-slate-900 border border-slate-800 rounded-t-2xl w-full max-w-md p-5 flex flex-col gap-4 overflow-y-auto"
-        style={{ maxHeight: '92dvh' }}
+        className="bg-slate-900 border border-slate-800 rounded-t-2xl w-full max-w-md px-5 pt-5 flex flex-col gap-4 overflow-y-auto"
+        style={{ maxHeight: '92dvh', paddingBottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 1rem))' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

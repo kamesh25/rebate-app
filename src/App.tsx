@@ -140,7 +140,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-white max-w-lg mx-auto px-4 pb-32">
 
       {/* Header */}
-      <div className="pt-10 pb-4">
+      <div className="pb-4" style={{ paddingTop: 'max(2.5rem, calc(env(safe-area-inset-top) + 0.5rem))' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">ReturnIt 🛍</h1>
