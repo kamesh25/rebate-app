@@ -163,6 +163,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
               />
               <span className="flex items-center text-slate-500 text-sm">days</span>
             </div>
+            <p className="text-slate-600 text-xs">Typical policy — verify with your receipt</p>
           </div>
         </div>
 
