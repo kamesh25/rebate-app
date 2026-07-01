@@ -48,11 +48,13 @@ workflows:
       - name: Set up code signing
         script: xcode-project use-profiles
 
-      - name: Increment build number
+      - name: Set build number from Codemagic build counter
         script: |
           cd ios/App
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID") || LATEST_BUILD_NUMBER=0
-          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+          agvtool new-version -all $PROJECT_BUILD_NUMBER
+          # $PROJECT_BUILD_NUMBER auto-increments on every Codemagic build
+          # for this app, so it is always higher than any prior upload —
+          # avoids relying on querying Apple's API for the last build number.
 
       - name: Build .ipa for distribution
         script: |
