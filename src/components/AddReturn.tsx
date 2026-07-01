@@ -8,18 +8,23 @@ interface Props {
   onAdd: (item: ReturnItem) => void
   onClose: () => void
   storePolicies: typeof STORE_POLICIES
+  editItem?: ReturnItem
 }
 
-export default function AddReturn({ onAdd, onClose }: Props) {
+export default function AddReturn({ onAdd, onClose, editItem }: Props) {
   const today = todayString()
-  const [store, setStore] = useState('')
-  const [customStore, setCustomStore] = useState('')
-  const [item, setItem] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState(today)
-  const [customDays, setCustomDays] = useState('30')
-  const [notes, setNotes] = useState('')
-  const [photo, setPhoto] = useState<string | null>(null)
+  const editItemIsCustomStore = !!editItem && !STORE_POLICIES.some(p => p.store === editItem.store)
+  const [store, setStore] = useState(editItemIsCustomStore ? 'Other' : editItem?.store ?? '')
+  const [customStore, setCustomStore] = useState(editItemIsCustomStore ? editItem!.store : '')
+  const [item, setItem] = useState(editItem?.item ?? '')
+  const [purchaseDate, setPurchaseDate] = useState(editItem?.purchaseDate ?? today)
+  const [customDays, setCustomDays] = useState(String(editItem?.returnDays ?? 30))
+  const [notes, setNotes] = useState(editItem?.notes ?? '')
+  const [photo, setPhoto] = useState<string | null>(editItem?.photo ?? null)
   const [photoLoading, setPhotoLoading] = useState(false)
+  const [refundInput, setRefundInput] = useState(
+    editItem?.refundAmount != null ? String(editItem.refundAmount) : ''
+  )
 
   async function handleTakePhoto() {
     setPhotoLoading(true)
@@ -47,8 +52,19 @@ export default function AddReturn({ onAdd, onClose }: Props) {
     const days = parseInt(customDays)
     if (!days || days < 1) return
 
-    const deadline = new Date(purchaseDate)
-    deadline.setDate(deadline.getDate() + days)
+    if (editItem) {
+      onAdd({
+        ...editItem,
+        store: storeName,
+        item: item.trim(),
+        purchaseDate,
+        returnDays: days,
+        notes: notes.trim(),
+        photo: photo ?? undefined,
+        ...(editItem.returned ? { refundAmount: parseFloat(refundInput) || 0 } : {}),
+      })
+      return
+    }
 
     onAdd({
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -81,8 +97,8 @@ export default function AddReturn({ onAdd, onClose }: Props) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">Add Return</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none transition">×</button>
+          <h2 className="text-lg font-bold text-white">{editItem ? 'Edit Return' : 'Add Return'}</h2>
+          <button onClick={onClose} className="min-h-11 min-w-11 text-slate-500 hover:text-white text-xl leading-none transition flex items-center justify-center">×</button>
         </div>
 
         {/* Store picker */}
@@ -206,6 +222,24 @@ export default function AddReturn({ onAdd, onClose }: Props) {
           </div>
         )}
 
+        {/* Refund amount — only editable once this return is already marked returned */}
+        {editItem?.returned && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">How much did you get back?</label>
+            <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-emerald-500 rounded-xl px-4 py-3 gap-2 transition">
+              <span className="text-emerald-400 font-bold text-xl">$</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={refundInput}
+                onChange={e => setRefundInput(e.target.value)}
+                placeholder="0.00"
+                className="bg-transparent text-white text-2xl font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
+              />
+            </div>
+          </div>
+        )}
+
         {!store && (
           <p className="text-amber-400 text-xs text-center -mt-2">👆 Tap a store above first</p>
         )}
@@ -216,9 +250,9 @@ export default function AddReturn({ onAdd, onClose }: Props) {
         <button
           onClick={handleSubmit}
           disabled={!isValid}
-          className="bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
+          className="min-h-11 bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
         >
-          {isValid ? 'Save Return' : 'Fill in store + item to save'}
+          {isValid ? (editItem ? 'Update Return' : 'Save Return') : 'Fill in store + item to save'}
         </button>
       </div>
     </div>

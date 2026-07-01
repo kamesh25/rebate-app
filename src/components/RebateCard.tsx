@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { RebateItem } from '../types'
-import { rebateDaysLeft, rebateUrgency, parseLocalDate } from '../types'
+import { rebateDaysLeft, rebateUrgency, parseLocalDate, storeAccent } from '../types'
 
 const COUNTDOWN_STYLES = {
   safe:      'bg-purple-900/40 text-purple-300 border-purple-700/50',
@@ -22,9 +22,10 @@ interface Props {
   item: RebateItem
   onMarkSubmitted: () => void
   onDelete: () => void
+  onEdit: () => void
 }
 
-export default function RebateCard({ item, onMarkSubmitted, onDelete }: Props) {
+export default function RebateCard({ item, onMarkSubmitted, onDelete, onEdit }: Props) {
   const [confirm, setConfirm] = useState<'none' | 'delete'>('none')
   const days = rebateDaysLeft(item)
   const level = rebateUrgency(item)
@@ -46,7 +47,10 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete }: Props) {
   const progress = item.submitted ? 100 : Math.max(0, Math.min(100, ((totalDays - days) / totalDays) * 100))
 
   return (
-    <div className="bg-slate-900 border border-purple-900/60 rounded-2xl overflow-hidden">
+    <div
+      className="bg-slate-900 border border-purple-900/60 rounded-2xl overflow-hidden border-l-4"
+      style={{ borderLeftColor: storeAccent(item.store) }}
+    >
       {/* Purple accent bar — always purple, urgency only affects thickness */}
       <div className="h-1.5 bg-slate-800">
         <div className={`h-full ${BAR_STYLES[level]} transition-all`} style={{ width: `${progress}%` }} />
@@ -84,18 +88,24 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete }: Props) {
           </div>
 
           {/* Right — actions */}
-          <div className="flex flex-col gap-2 shrink-0">
+          <div className="flex flex-col gap-2 shrink-0 min-w-[92px]">
             {confirm === 'none' && !item.submitted && (
               <>
                 <button
                   onClick={onMarkSubmitted}
-                  className="bg-purple-700 active:bg-purple-600 text-white text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
+                  className="min-h-11 bg-purple-700 active:bg-purple-600 text-white text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   ✓ Mailed
                 </button>
                 <button
+                  onClick={onEdit}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                >
+                  Edit
+                </button>
+                <button
                   onClick={() => setConfirm('delete')}
-                  className="bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
                 >
                   Delete
                 </button>
@@ -105,22 +115,30 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete }: Props) {
             {confirm === 'delete' && (
               <div className="flex flex-col gap-2 items-stretch">
                 <p className="text-slate-400 text-xs text-center">Remove?</p>
-                <button onClick={onDelete} className="bg-red-700 active:bg-red-600 text-white text-sm font-bold px-3 py-2.5 rounded-xl">
+                <button onClick={onDelete} className="min-h-11 bg-red-700 active:bg-red-600 text-white text-sm font-bold px-3 py-2.5 rounded-xl">
                   Remove
                 </button>
-                <button onClick={() => setConfirm('none')} className="text-slate-500 text-sm py-1 text-center">
+                <button onClick={() => setConfirm('none')} className="min-h-11 text-slate-500 text-sm py-2 text-center">
                   Cancel
                 </button>
               </div>
             )}
 
-            {item.submitted && (
-              <button
-                onClick={() => setConfirm('delete')}
-                className="text-slate-700 active:text-red-400 text-xs transition text-center px-2"
-              >
-                Remove
-              </button>
+            {item.submitted && confirm === 'none' && (
+              <>
+                <button
+                  onClick={onEdit}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setConfirm('delete')}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                >
+                  Remove
+                </button>
+              </>
             )}
           </div>
         </div>

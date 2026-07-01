@@ -22,6 +22,8 @@ export default function App() {
   const [rebates, setRebates] = useState<RebateItem[]>(loadRebates)
   const [totalSaved, setTotalSaved] = useState(loadTotalSaved)
   const [addMode, setAddMode] = useState<AddMode>('none')
+  const [editReturnItem, setEditReturnItem] = useState<ReturnItem | null>(null)
+  const [editRebateItem, setEditRebateItem] = useState<RebateItem | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
   const [testMsg, setTestMsg] = useState('')
@@ -38,13 +40,30 @@ export default function App() {
   }
 
   // --- Returns ---
-  async function addItem(item: ReturnItem) {
-    const next = [item, ...items]
+  async function saveReturn(item: ReturnItem) {
+    const previous = items.find(i => i.id === item.id)
+    const next = previous ? items.map(i => i.id === item.id ? item : i) : [item, ...items]
     setItems(next)
     saveItems(next)
     setAddMode('none')
+    setEditReturnItem(null)
     haptics.success()
-    await scheduleReturnNotifications(item)
+
+    await cancelReturnNotifications(item.id)
+    if (!item.returned) await scheduleReturnNotifications(item)
+
+    if (previous) {
+      const delta = (item.refundAmount ?? 0) - (previous.refundAmount ?? 0)
+      if (delta !== 0) {
+        addSavings(delta)
+        setTotalSaved(loadTotalSaved())
+      }
+    }
+  }
+
+  function openEditReturn(item: ReturnItem) {
+    setEditReturnItem(item)
+    setAddMode('return')
   }
 
   async function markReturned(id: string, refund: number) {
@@ -84,12 +103,19 @@ export default function App() {
   }
 
   // --- Rebates ---
-  function addRebate(rebate: RebateItem) {
-    const next = [rebate, ...rebates]
+  function saveRebate(rebate: RebateItem) {
+    const exists = rebates.some(r => r.id === rebate.id)
+    const next = exists ? rebates.map(r => r.id === rebate.id ? rebate : r) : [rebate, ...rebates]
     setRebates(next)
     saveRebates(next)
     setAddMode('none')
+    setEditRebateItem(null)
     haptics.success()
+  }
+
+  function openEditRebate(rebate: RebateItem) {
+    setEditRebateItem(rebate)
+    setAddMode('rebate')
   }
 
   function markRebateSubmitted(id: string) {
@@ -155,8 +181,8 @@ export default function App() {
                 {urgentCount} urgent
               </span>
             )}
-            <button onClick={handleTestNotification} className="text-slate-600 hover:text-slate-400 text-xl transition" title="Test notification">🔔</button>
-            <button onClick={() => setShowSettings(true)} className="text-slate-600 hover:text-slate-400 text-xl transition">⚙️</button>
+            <button onClick={handleTestNotification} className="min-h-11 min-w-11 flex items-center justify-center text-slate-600 hover:text-slate-400 text-xl transition" title="Test notification">🔔</button>
+            <button onClick={() => setShowSettings(true)} className="min-h-11 min-w-11 flex items-center justify-center text-slate-600 hover:text-slate-400 text-xl transition">⚙️</button>
           </div>
         </div>
 
@@ -189,7 +215,7 @@ export default function App() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`flex-1 py-2 text-sm font-semibold rounded-xl transition border ${
+            className={`min-h-11 flex-1 py-2 text-sm font-semibold rounded-xl transition border ${
               filter === f
                 ? f === 'rebates' ? 'bg-purple-700 border-purple-600 text-white' : 'bg-white border-white text-black'
                 : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600'
@@ -226,6 +252,7 @@ export default function App() {
               item={item}
               onMarkReturned={(refund) => markReturned(item.id, refund)}
               onDelete={() => deleteItem(item.id)}
+              onEdit={() => openEditReturn(item)}
             />
           ))}
 
@@ -236,6 +263,7 @@ export default function App() {
               item={rebate}
               onMarkSubmitted={() => markRebateSubmitted(rebate.id)}
               onDelete={() => deleteRebate(rebate.id)}
+              onEdit={() => openEditRebate(rebate)}
             />
           ))}
 
@@ -244,10 +272,10 @@ export default function App() {
             <>
               <p className="text-slate-600 text-xs font-semibold uppercase tracking-wide px-1 mt-2">Completed</p>
               {doneReturns.map(item => (
-                <ReturnCard key={item.id} item={item} onMarkReturned={(r) => markReturned(item.id, r)} onDelete={() => deleteItem(item.id)} />
+                <ReturnCard key={item.id} item={item} onMarkReturned={(r) => markReturned(item.id, r)} onDelete={() => deleteItem(item.id)} onEdit={() => openEditReturn(item)} />
               ))}
               {doneRebates.map(rebate => (
-                <RebateCard key={rebate.id} item={rebate} onMarkSubmitted={() => markRebateSubmitted(rebate.id)} onDelete={() => deleteRebate(rebate.id)} />
+                <RebateCard key={rebate.id} item={rebate} onMarkSubmitted={() => markRebateSubmitted(rebate.id)} onDelete={() => deleteRebate(rebate.id)} onEdit={() => openEditRebate(rebate)} />
               ))}
             </>
           )}
@@ -256,7 +284,7 @@ export default function App() {
             <>
               <p className="text-slate-600 text-xs font-semibold uppercase tracking-wide px-1 mt-2">Returned</p>
               {doneReturns.map(item => (
-                <ReturnCard key={item.id} item={item} onMarkReturned={(r) => markReturned(item.id, r)} onDelete={() => deleteItem(item.id)} />
+                <ReturnCard key={item.id} item={item} onMarkReturned={(r) => markReturned(item.id, r)} onDelete={() => deleteItem(item.id)} onEdit={() => openEditReturn(item)} />
               ))}
             </>
           )}
@@ -265,7 +293,7 @@ export default function App() {
             <>
               <p className="text-slate-600 text-xs font-semibold uppercase tracking-wide px-1 mt-2">Submitted</p>
               {doneRebates.map(rebate => (
-                <RebateCard key={rebate.id} item={rebate} onMarkSubmitted={() => markRebateSubmitted(rebate.id)} onDelete={() => deleteRebate(rebate.id)} />
+                <RebateCard key={rebate.id} item={rebate} onMarkSubmitted={() => markRebateSubmitted(rebate.id)} onDelete={() => deleteRebate(rebate.id)} onEdit={() => openEditRebate(rebate)} />
               ))}
             </>
           )}
@@ -305,10 +333,19 @@ export default function App() {
       ) : null}
 
       {addMode === 'return' && (
-        <AddReturn onAdd={addItem} onClose={() => setAddMode('none')} storePolicies={STORE_POLICIES} />
+        <AddReturn
+          onAdd={saveReturn}
+          onClose={() => { setAddMode('none'); setEditReturnItem(null) }}
+          storePolicies={STORE_POLICIES}
+          editItem={editReturnItem ?? undefined}
+        />
       )}
       {addMode === 'rebate' && (
-        <AddRebate onAdd={addRebate} onClose={() => setAddMode('none')} />
+        <AddRebate
+          onAdd={saveRebate}
+          onClose={() => { setAddMode('none'); setEditRebateItem(null) }}
+          editItem={editRebateItem ?? undefined}
+        />
       )}
 
       {showSettings && (

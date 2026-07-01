@@ -7,18 +7,20 @@ import { Capacitor } from '@capacitor/core'
 interface Props {
   onAdd: (item: RebateItem) => void
   onClose: () => void
+  editItem?: RebateItem
 }
 
-export default function AddRebate({ onAdd, onClose }: Props) {
+export default function AddRebate({ onAdd, onClose, editItem }: Props) {
   const today = todayString()
-  const [store, setStore] = useState('')
-  const [customStore, setCustomStore] = useState('')
-  const [item, setItem] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState(today)
-  const [mailByDate, setMailByDate] = useState('')
-  const [rebateAmount, setRebateAmount] = useState('')
-  const [notes, setNotes] = useState('')
-  const [photo, setPhoto] = useState<string | null>(null)
+  const editItemIsCustomStore = !!editItem && !STORE_POLICIES.some(p => p.store === editItem.store)
+  const [store, setStore] = useState(editItemIsCustomStore ? 'Other' : editItem?.store ?? '')
+  const [customStore, setCustomStore] = useState(editItemIsCustomStore ? editItem!.store : '')
+  const [item, setItem] = useState(editItem?.item ?? '')
+  const [purchaseDate, setPurchaseDate] = useState(editItem?.purchaseDate ?? today)
+  const [mailByDate, setMailByDate] = useState(editItem?.mailByDate ?? '')
+  const [rebateAmount, setRebateAmount] = useState(editItem ? String(editItem.rebateAmount) : '')
+  const [notes, setNotes] = useState(editItem?.notes ?? '')
+  const [photo, setPhoto] = useState<string | null>(editItem?.photo ?? null)
   const [photoLoading, setPhotoLoading] = useState(false)
 
   async function handleTakePhoto() {
@@ -45,6 +47,21 @@ export default function AddRebate({ onAdd, onClose }: Props) {
 
   function handleSubmit() {
     if (!isValid) return
+
+    if (editItem) {
+      onAdd({
+        ...editItem,
+        store: storeName,
+        item: item.trim(),
+        purchaseDate,
+        mailByDate,
+        rebateAmount: amount,
+        notes: notes.trim(),
+        photo: photo ?? undefined,
+      })
+      return
+    }
+
     onAdd({
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       store: storeName,
@@ -68,10 +85,10 @@ export default function AddRebate({ onAdd, onClose }: Props) {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white">Add Rebate</h2>
+            <h2 className="text-lg font-bold text-white">{editItem ? 'Edit Rebate' : 'Add Rebate'}</h2>
             <p className="text-purple-400 text-xs mt-0.5">Track your mail-in rebate deadline</p>
           </div>
-          <button onClick={onClose} className="text-slate-500 hover:text-white text-xl leading-none transition">×</button>
+          <button onClick={onClose} className="min-h-11 min-w-11 text-slate-500 hover:text-white text-xl leading-none transition flex items-center justify-center">×</button>
         </div>
 
         {/* Store picker */}
@@ -82,7 +99,7 @@ export default function AddRebate({ onAdd, onClose }: Props) {
               <button
                 key={p.store}
                 onClick={() => setStore(p.store)}
-                className={`py-2 px-2 rounded-xl text-xs font-semibold transition border ${store === p.store ? 'bg-purple-700 border-purple-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500'}`}
+                className={`min-h-11 flex items-center justify-center py-2 px-2 rounded-xl text-xs font-semibold transition border ${store === p.store ? 'bg-purple-700 border-purple-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500'}`}
               >
                 {p.store}
               </button>
@@ -201,9 +218,9 @@ export default function AddRebate({ onAdd, onClose }: Props) {
         <button
           onClick={handleSubmit}
           disabled={!isValid}
-          className="bg-purple-700 hover:bg-purple-600 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
+          className="min-h-11 bg-purple-700 hover:bg-purple-600 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
         >
-          {isValid ? 'Save Rebate' : 'Fill in details to save'}
+          {isValid ? (editItem ? 'Update Rebate' : 'Save Rebate') : 'Fill in details to save'}
         </button>
       </div>
     </div>

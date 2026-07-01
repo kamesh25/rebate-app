@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ReturnItem } from '../types'
-import { daysLeft, urgency, parseLocalDate } from '../types'
+import { daysLeft, urgency, parseLocalDate, storeAccent } from '../types'
 
 const URGENCY_STYLES = {
   safe:    { bar: 'bg-emerald-500', badge: 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50', border: 'border-slate-800' },
@@ -15,9 +15,10 @@ interface Props {
   item: ReturnItem
   onMarkReturned: (refund: number) => void
   onDelete: () => void
+  onEdit: () => void
 }
 
-export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
+export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: Props) {
   const [confirm, setConfirm] = useState<Confirm>('none')
   const [refundInput, setRefundInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -47,7 +48,10 @@ export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
   }
 
   return (
-    <div className={`bg-slate-900 border ${styles.border} rounded-2xl overflow-hidden`}>
+    <div
+      className={`bg-slate-900 border ${styles.border} rounded-2xl overflow-hidden border-l-4`}
+      style={{ borderLeftColor: storeAccent(item.store) }}
+    >
       {/* Progress bar */}
       <div className="h-1.5 bg-slate-800">
         <div className={`h-full ${styles.bar} transition-all`} style={{ width: `${progress}%` }} />
@@ -67,6 +71,9 @@ export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
             </div>
             <p className="text-slate-300 text-base leading-snug">{item.item}</p>
             <p className="text-slate-500 text-sm mt-1.5">Return by {deadlineStr}</p>
+            {item.returned && item.refundAmount != null && item.refundAmount > 0 && (
+              <p className="text-emerald-400 text-sm font-semibold mt-1">Got back ${item.refundAmount.toFixed(2)}</p>
+            )}
             {item.notes && <p className="text-slate-500 text-sm mt-1 italic">{item.notes}</p>}
             {item.photo && (
               <img
@@ -79,18 +86,24 @@ export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
           </div>
 
           {/* Right — action buttons (hidden during refund entry) */}
-          <div className="flex flex-col gap-2 shrink-0">
+          <div className="flex flex-col gap-2 shrink-0 min-w-[92px]">
             {confirm === 'none' && !item.returned && (
               <>
                 <button
                   onClick={openReturnConfirm}
-                  className="bg-emerald-700 active:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-emerald-700 active:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition"
                 >
                   ✓ Done
                 </button>
                 <button
+                  onClick={onEdit}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                >
+                  Edit
+                </button>
+                <button
                   onClick={() => setConfirm('delete')}
-                  className="bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
                 >
                   Delete
                 </button>
@@ -100,22 +113,30 @@ export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
             {confirm === 'delete' && (
               <div className="flex flex-col gap-2 items-stretch">
                 <p className="text-slate-400 text-xs text-center">Remove this?</p>
-                <button onClick={onDelete} className="bg-red-700 active:bg-red-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl">
+                <button onClick={onDelete} className="min-h-11 bg-red-700 active:bg-red-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl">
                   Remove
                 </button>
-                <button onClick={() => setConfirm('none')} className="text-slate-500 text-sm py-1 text-center">
+                <button onClick={() => setConfirm('none')} className="min-h-11 text-slate-500 text-sm py-2 text-center">
                   Cancel
                 </button>
               </div>
             )}
 
-            {item.returned && (
-              <button
-                onClick={() => setConfirm('delete')}
-                className="text-slate-700 active:text-red-400 text-xs transition text-center px-2"
-              >
-                Remove
-              </button>
+            {item.returned && confirm === 'none' && (
+              <>
+                <button
+                  onClick={onEdit}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => setConfirm('delete')}
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                >
+                  Remove
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -145,13 +166,13 @@ export default function ReturnCard({ item, onMarkReturned, onDelete }: Props) {
           <div className="flex gap-2">
             <button
               onClick={() => onMarkReturned(parseFloat(refundInput) || 0)}
-              className="flex-1 bg-emerald-600 active:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm"
+              className="min-h-11 flex-1 bg-emerald-600 active:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm"
             >
               {parseFloat(refundInput) > 0 ? `Save $${parseFloat(refundInput).toFixed(2)} 💰` : 'Mark returned'}
             </button>
             <button
               onClick={() => setConfirm('none')}
-              className="bg-slate-800 text-slate-400 font-semibold px-4 py-3 rounded-xl transition text-sm"
+              className="min-h-11 bg-slate-800 text-slate-400 font-semibold px-4 py-3 rounded-xl transition text-sm"
             >
               Cancel
             </button>

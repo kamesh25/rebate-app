@@ -62,7 +62,7 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
           {s.cta}
         </button>
         {s.secondary && (
-          <button onClick={s.secondaryAction} className="text-slate-500 text-sm py-2">
+          <button onClick={s.secondaryAction} className="min-h-11 text-slate-500 text-sm">
             {s.secondary}
           </button>
         )}

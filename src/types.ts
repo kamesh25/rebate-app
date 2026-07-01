@@ -87,3 +87,21 @@ export const STORE_POLICIES: { store: string; days: number }[] = [
   { store: 'IKEA', days: 365 },
   { store: 'Other', days: 30 },
 ]
+
+// Brand-inspired accent colors, adjusted for legibility on a dark card background
+const STORE_ACCENT: Record<string, string> = {
+  Amazon: '#FF9900',
+  Walmart: '#0071CE',
+  Target: '#EF4444',
+  'Best Buy': '#3B82F6',
+  Costco: '#0F7A9C',
+  Apple: '#D1D5DB',
+  'Home Depot': '#F96302',
+  Nordstrom: '#E5E7EB',
+  "Macy's": '#DC2626',
+  IKEA: '#3399FF',
+}
+
+export function storeAccent(store: string): string {
+  return STORE_ACCENT[store] ?? '#818cf8'
+}

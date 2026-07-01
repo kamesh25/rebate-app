@@ -10,7 +10,7 @@ export default function Settings({ onClose, totalSaved }: { onClose: () => void;
           style={{ paddingTop: 'max(3rem, calc(env(safe-area-inset-top) + 0.75rem))' }}
         >
           <h1 className="text-xl font-bold text-white">Settings</h1>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-sm font-semibold transition">Done</button>
+          <button onClick={onClose} className="min-h-11 px-2 flex items-center text-slate-400 hover:text-white text-sm font-semibold transition">Done</button>
         </div>
 
         {/* Savings card */}
