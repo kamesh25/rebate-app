@@ -88,7 +88,7 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete, onEdit }: 
           </div>
 
           {/* Right — actions */}
-          <div className="flex flex-col gap-2 shrink-0 min-w-[92px]">
+          <div className="flex flex-col gap-2 shrink-0">
             {confirm === 'none' && !item.submitted && (
               <>
                 <button
@@ -99,13 +99,13 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete, onEdit }: 
                 </button>
                 <button
                   onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Delete
                 </button>
@@ -128,13 +128,13 @@ export default function RebateCard({ item, onMarkSubmitted, onDelete, onEdit }: 
               <>
                 <button
                   onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-3 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-3 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Remove
                 </button>

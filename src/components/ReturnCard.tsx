@@ -86,24 +86,24 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
           </div>
 
           {/* Right — action buttons (hidden during refund entry) */}
-          <div className="flex flex-col gap-2 shrink-0 min-w-[92px]">
+          <div className="flex flex-col gap-2 shrink-0">
             {confirm === 'none' && !item.returned && (
               <>
                 <button
                   onClick={openReturnConfirm}
-                  className="min-h-11 bg-emerald-700 active:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-emerald-700 active:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   ✓ Done
                 </button>
                 <button
                   onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Delete
                 </button>
@@ -126,13 +126,13 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
               <>
                 <button
                   onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
                   Remove
                 </button>
