@@ -95,8 +95,8 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
         className="bg-slate-900 border border-slate-800 rounded-t-2xl w-full max-w-md px-5 flex flex-col gap-4 overflow-y-auto"
         style={{
           maxHeight: '92dvh',
-          paddingTop: 'max(1.25rem, env(safe-area-inset-top))',
-          paddingBottom: 'max(1.25rem, calc(env(safe-area-inset-bottom) + 1rem))',
+          paddingTop: 'calc(var(--safe-top) + 1.25rem)',
+          paddingBottom: 'calc(var(--safe-bottom) + 1.25rem)',
         }}
         onClick={e => e.stopPropagation()}
       >

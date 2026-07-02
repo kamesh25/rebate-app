@@ -3,11 +3,11 @@ import { STORE_POLICIES } from '../types'
 export default function Settings({ onClose, totalSaved }: { onClose: () => void; totalSaved: number }) {
   return (
     <div className="fixed inset-0 bg-slate-950 z-50 overflow-y-auto">
-      <div className="max-w-lg mx-auto px-4" style={{ paddingBottom: 'max(3rem, calc(env(safe-area-inset-bottom) + 2rem))' }}>
+      <div className="max-w-lg mx-auto px-4" style={{ paddingBottom: 'calc(var(--safe-bottom) + 3rem)' }}>
         {/* Header */}
         <div
           className="flex items-center justify-between pb-6"
-          style={{ paddingTop: 'max(3rem, calc(env(safe-area-inset-top) + 0.75rem))' }}
+          style={{ paddingTop: 'calc(var(--safe-top) + 1.5rem)' }}
         >
           <h1 className="text-xl font-bold text-white">Settings</h1>
           <button onClick={onClose} className="min-h-11 px-2 flex items-center text-slate-400 hover:text-white text-sm font-semibold transition">Done</button>

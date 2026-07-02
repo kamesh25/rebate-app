@@ -163,10 +163,10 @@ export default function App() {
   const totalActive = activeReturns.length + activeRebates.length
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white max-w-lg mx-auto px-4 pb-32">
+    <div className="min-h-screen bg-slate-950 text-white max-w-lg mx-auto px-4" style={{ paddingBottom: 'calc(var(--safe-bottom) + 8rem)' }}>
 
       {/* Header */}
-      <div className="pb-4" style={{ paddingTop: 'max(2.5rem, calc(env(safe-area-inset-top) + 0.5rem))' }}>
+      <div className="pb-4" style={{ paddingTop: 'calc(var(--safe-top) + 1.5rem)' }}>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white tracking-tight">ReturnIt 🛍</h1>
@@ -304,7 +304,7 @@ export default function App() {
       {undoItem && (
         <div
           className="fixed left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-800 border border-slate-700 rounded-2xl px-4 py-3 shadow-xl z-40 whitespace-nowrap"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 6rem)' }}
+          style={{ bottom: 'calc(var(--safe-bottom) + 6rem)' }}
         >
           <span className="text-slate-300 text-sm">Return deleted</span>
           <button onClick={handleUndo} className="text-indigo-400 font-bold text-sm hover:text-indigo-300 transition">Undo</button>
@@ -315,7 +315,7 @@ export default function App() {
       {addMode === 'none' ? (
         <div
           className="fixed left-1/2 -translate-x-1/2 flex gap-3 z-30"
-          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}
+          style={{ bottom: 'calc(var(--safe-bottom) + 1.5rem)' }}
         >
           <button
             onClick={() => setAddMode('return')}

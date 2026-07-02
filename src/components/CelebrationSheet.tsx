@@ -74,7 +74,7 @@ export default function CelebrationSheet({ item, refund, totalSaved, onDone }: P
         className="relative bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-800 rounded-t-3xl px-6 pt-8 flex flex-col items-center gap-5 transition-transform duration-300"
         style={{
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
-          paddingBottom: 'max(2.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))',
+          paddingBottom: 'calc(var(--safe-bottom) + 2.5rem)',
         }}
       >
         {/* Handle */}

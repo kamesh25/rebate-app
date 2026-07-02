@@ -35,8 +35,11 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
 
   return (
     <div
-      className="min-h-screen bg-slate-950 flex flex-col items-center justify-between px-6 pt-16"
-      style={{ paddingBottom: 'max(4rem, calc(env(safe-area-inset-bottom) + 2rem))' }}
+      className="min-h-screen bg-slate-950 flex flex-col items-center justify-between px-6"
+      style={{
+        paddingTop: 'calc(var(--safe-top) + 2.5rem)',
+        paddingBottom: 'calc(var(--safe-bottom) + 2rem)',
+      }}
     >
       {/* Progress dots */}
       <div className="flex gap-2">
