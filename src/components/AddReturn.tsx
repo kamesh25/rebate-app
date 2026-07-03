@@ -166,6 +166,22 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
               />
             </div>
 
+            {/* Price paid — surfaced here, not buried in Details, since it's the actual motivation */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">How much did it cost? (optional)</label>
+              <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-indigo-500 rounded-xl px-4 py-3 gap-2 transition">
+                <span className="text-slate-400 font-bold text-lg">$</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={pricePaid}
+                  onChange={e => setPricePaid(e.target.value)}
+                  placeholder="0.00"
+                  className="bg-transparent text-white text-lg font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
+                />
+              </div>
+            </div>
+
             {!store && (
               <p className="text-amber-400 text-xs text-center -mt-2">Pick a store above first</p>
             )}
@@ -176,7 +192,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
               onClick={() => setStep('details')}
               className="min-h-11 text-slate-500 text-sm text-center -mt-2"
             >
-              Add price, photo or notes
+              Add photo, notes or adjust return window
             </button>
           </>
         ) : (
@@ -202,22 +218,6 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
                 max={today}
                 className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
               />
-            </div>
-
-            {/* Price paid */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Price paid (optional)</label>
-              <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-indigo-500 rounded-xl px-4 py-3 gap-2 transition">
-                <span className="text-slate-400 font-bold text-lg">$</span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  value={pricePaid}
-                  onChange={e => setPricePaid(e.target.value)}
-                  placeholder="0.00"
-                  className="bg-transparent text-white text-lg font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
-                />
-              </div>
             </div>
 
             {/* Return window stepper */}
