@@ -1,74 +1,67 @@
 import { useState } from 'react'
 import { requestPermission } from '../hooks/useNotifications'
+import { ClockIcon } from './icons'
+
+const SCHEDULE = [
+  { tag: '3d', color: 'bg-slate-800 text-slate-300', title: '3 days before', body: 'Time to plan the trip' },
+  { tag: '1d', color: 'bg-amber-900/50 text-amber-300', title: '1 day before', body: 'Last comfortable chance' },
+  { tag: '0d', color: 'bg-red-900/50 text-red-300', title: 'Day of deadline', body: "Final call before money's gone" },
+]
 
 export default function Onboarding({ onDone }: { onDone: () => void }) {
-  const [step, setStep] = useState(0)
   const [requesting, setRequesting] = useState(false)
 
-  async function handleNotifications() {
+  async function handleAllow() {
     setRequesting(true)
     await requestPermission()
     setRequesting(false)
     onDone()
   }
 
-  const steps = [
-    {
-      icon: '🛍',
-      title: 'Never lose money\non a missed return',
-      body: 'Track every purchase return deadline in one place. We remind you before time runs out.',
-      cta: 'Next',
-      action: () => setStep(1),
-    },
-    {
-      icon: '⏰',
-      title: 'Get reminded before\nit\'s too late',
-      body: 'ReturnIt alerts you 3 days before, 1 day before, and on the last day — so you always make it in time.',
-      cta: requesting ? 'Allowing...' : 'Allow Reminders',
-      action: handleNotifications,
-      secondary: 'Skip for now',
-      secondaryAction: onDone,
-    },
-  ]
-
-  const s = steps[step]
-
   return (
     <div
-      className="min-h-screen bg-slate-950 flex flex-col items-center justify-between px-6"
+      className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-6 gap-8"
       style={{
         paddingTop: 'calc(var(--safe-top) + 2.5rem)',
         paddingBottom: 'calc(var(--safe-bottom) + 2rem)',
       }}
     >
-      {/* Progress dots */}
-      <div className="flex gap-2">
-        {steps.map((_, i) => (
-          <div key={i} className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-indigo-500' : 'w-1.5 bg-slate-700'}`} />
+      <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+        <ClockIcon className="w-8 h-8 text-amber-400" />
+      </div>
+
+      <div className="text-center flex flex-col gap-2">
+        <h1 className="text-2xl font-bold text-white">Never miss a deadline</h1>
+        <p className="text-slate-400 text-base leading-relaxed max-w-xs">
+          ReturnIt nudges you three times before every return or rebate window closes.
+        </p>
+      </div>
+
+      <div className="w-full flex flex-col gap-4">
+        {SCHEDULE.map(s => (
+          <div key={s.tag} className="flex items-center gap-3">
+            <span className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${s.color}`}>
+              {s.tag}
+            </span>
+            <div>
+              <p className="text-white font-semibold text-sm">{s.title}</p>
+              <p className="text-slate-500 text-sm">{s.body}</p>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col items-center text-center gap-6">
-        <div className="text-8xl">{s.icon}</div>
-        <h1 className="text-3xl font-bold text-white leading-tight whitespace-pre-line">{s.title}</h1>
-        <p className="text-slate-400 text-lg leading-relaxed">{s.body}</p>
-      </div>
-
-      {/* Actions */}
       <div className="w-full flex flex-col gap-3">
         <button
-          onClick={s.action}
+          onClick={handleAllow}
           disabled={requesting}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 active:scale-95 text-white font-bold py-4 rounded-2xl text-lg transition"
+          className="min-h-11 w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 active:scale-95 text-white font-bold py-4 rounded-2xl text-lg transition"
         >
-          {s.cta}
+          {requesting ? 'Allowing…' : 'Allow reminders'}
         </button>
-        {s.secondary && (
-          <button onClick={s.secondaryAction} className="min-h-11 text-slate-500 text-sm">
-            {s.secondary}
-          </button>
-        )}
+        <button onClick={onDone} className="min-h-11 text-slate-500 text-sm">
+          Not now
+        </button>
       </div>
     </div>
   )

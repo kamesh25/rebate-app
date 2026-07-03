@@ -12,6 +12,7 @@ import CelebrationSheet from './components/CelebrationSheet'
 import { scheduleReturnNotifications, cancelReturnNotifications, sendTestNotification } from './hooks/useNotifications'
 import { haptics } from './hooks/useHaptics'
 import { loadDemoData } from './demoData'
+import { BellIcon, BellOffIcon, SettingsIcon, PlusIcon, DollarIcon } from './components/icons'
 
 type Filter = 'all' | 'returns' | 'rebates'
 type AddMode = 'none' | 'return' | 'rebate'
@@ -25,6 +26,7 @@ export default function App() {
   const [editReturnItem, setEditReturnItem] = useState<ReturnItem | null>(null)
   const [editRebateItem, setEditRebateItem] = useState<RebateItem | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [fabOpen, setFabOpen] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
   const [testMsg, setTestMsg] = useState('')
   const [undoItem, setUndoItem] = useState<ReturnItem | null>(null)
@@ -169,20 +171,25 @@ export default function App() {
       <div className="pb-4" style={{ paddingTop: 'calc(var(--safe-top) + 1.5rem)' }}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">ReturnIt 🛍</h1>
-            {totalSaved > 0
-              ? <p className="text-emerald-400 text-sm font-semibold mt-0.5">Saved ${totalSaved.toFixed(2)} total 💰</p>
-              : <p className="text-slate-500 text-sm mt-0.5">Never miss a return or rebate deadline</p>
-            }
+            <h1 className="text-2xl font-bold text-white tracking-tight">ReturnIt</h1>
+            {totalSaved > 0 && (
+              <p className="text-emerald-400 text-sm font-semibold mt-0.5 flex items-center gap-1.5">
+                <DollarIcon className="w-4 h-4" /> ${totalSaved.toFixed(2)} saved so far
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             {urgentCount > 0 && (
-              <span className="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse">
+              <span className="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full mr-1">
                 {urgentCount} urgent
               </span>
             )}
-            <button onClick={handleTestNotification} className="min-h-11 min-w-11 flex items-center justify-center text-slate-600 hover:text-slate-400 text-xl transition" title="Test notification">🔔</button>
-            <button onClick={() => setShowSettings(true)} className="min-h-11 min-w-11 flex items-center justify-center text-slate-600 hover:text-slate-400 text-xl transition">⚙️</button>
+            <button onClick={handleTestNotification} className="min-h-11 min-w-11 flex items-center justify-center text-slate-500 hover:text-slate-300 transition" title="Test notification">
+              <BellIcon className="w-5 h-5" />
+            </button>
+            <button onClick={() => setShowSettings(true)} className="min-h-11 min-w-11 flex items-center justify-center text-slate-500 hover:text-slate-300 transition">
+              <SettingsIcon className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -191,20 +198,8 @@ export default function App() {
         )}
         {showNotifBanner && (
           <div className="flex items-center justify-between mt-3 bg-amber-900/30 border border-amber-700/50 rounded-xl px-3 py-2.5">
-            <p className="text-amber-300 text-sm">🔕 Reminders are off — you may miss deadlines</p>
-            <button onClick={() => setShowNotifBanner(false)} className="text-amber-500 text-lg leading-none ml-2">×</button>
-          </div>
-        )}
-
-        {/* Stats */}
-        {totalActive > 0 && (
-          <div className="grid grid-cols-3 gap-2 mt-5">
-            <Stat label="Active" value={totalActive} color="text-white" />
-            <Stat label="Expiring soon" value={
-              activeReturns.filter(i => { const u = urgency(i); return u === 'soon' || u === 'urgent' }).length +
-              activeRebates.filter(r => { const u = rebateUrgency(r); return u === 'soon' || u === 'urgent' }).length
-            } color="text-amber-400" />
-            <Stat label="Rebates" value={activeRebates.length} color="text-purple-400" />
+            <p className="text-amber-300 text-sm flex items-center gap-2"><BellOffIcon className="w-4 h-4 shrink-0" /> Reminders are off — you may miss deadlines</p>
+            <button onClick={() => setShowNotifBanner(false)} className="min-h-11 min-w-11 flex items-center justify-center text-amber-500 text-lg leading-none">×</button>
           </div>
         )}
       </div>
@@ -228,17 +223,21 @@ export default function App() {
 
       {/* Lists */}
       {totalActive === 0 && doneReturns.length === 0 && doneRebates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
-          <span className="text-6xl">🛍</span>
+        <div className="flex flex-col items-center justify-center py-14 gap-5 text-center">
+          <div className="bg-indigo-950/40 border border-indigo-800/40 rounded-2xl px-5 py-4 max-w-xs">
+            <p className="text-indigo-300 text-sm leading-relaxed">
+              The average shopper loses <span className="font-bold text-white">$200+ a year</span> to missed return windows and unfiled rebates.
+            </p>
+          </div>
           <div>
-            <p className="text-white font-semibold text-lg">Track returns & rebates</p>
+            <p className="text-white font-semibold text-lg">Track your first purchase</p>
             <p className="text-slate-500 text-sm mt-1 leading-relaxed">
               Tap + below to add a return deadline<br />or a mail-in rebate. We'll remind you.
             </p>
           </div>
           <button
             onClick={() => { const d = loadDemoData(); setItems(d); saveItems(d) }}
-            className="border border-slate-700 text-slate-400 text-sm font-semibold px-5 py-2.5 rounded-xl mt-1 hover:border-slate-500 transition"
+            className="min-h-11 border border-slate-700 text-slate-400 text-sm font-semibold px-5 rounded-xl hover:border-slate-500 transition"
           >
             See how it works →
           </button>
@@ -311,26 +310,42 @@ export default function App() {
         </div>
       )}
 
-      {/* Add buttons */}
-      {addMode === 'none' ? (
-        <div
-          className="fixed left-1/2 -translate-x-1/2 flex gap-3 z-30"
-          style={{ bottom: 'calc(var(--safe-bottom) + 1.5rem)' }}
-        >
-          <button
-            onClick={() => setAddMode('return')}
-            className="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-6 py-4 rounded-full shadow-xl shadow-indigo-900/50 transition flex items-center gap-2 whitespace-nowrap"
+      {/* Single FAB — expands to Return/Rebate on tap */}
+      {addMode === 'none' && (
+        <>
+          {fabOpen && (
+            <div className="fixed inset-0 z-20" onClick={() => setFabOpen(false)} />
+          )}
+          <div
+            className="fixed right-5 z-30 flex flex-col items-end gap-3"
+            style={{ bottom: 'calc(var(--safe-bottom) + 1.5rem)' }}
           >
-            <span className="text-xl leading-none">+</span> Return
-          </button>
-          <button
-            onClick={() => setAddMode('rebate')}
-            className="bg-purple-700 hover:bg-purple-600 active:scale-95 text-white font-bold px-6 py-4 rounded-full shadow-xl shadow-purple-900/50 transition flex items-center gap-2 whitespace-nowrap"
-          >
-            <span className="text-xl leading-none">+</span> Rebate
-          </button>
-        </div>
-      ) : null}
+            {fabOpen && (
+              <>
+                <button
+                  onClick={() => { setAddMode('rebate'); setFabOpen(false) }}
+                  className="min-h-11 bg-purple-700 active:bg-purple-600 text-white font-bold px-5 py-3 rounded-full shadow-xl shadow-purple-900/50 transition whitespace-nowrap"
+                >
+                  + Rebate
+                </button>
+                <button
+                  onClick={() => { setAddMode('return'); setFabOpen(false) }}
+                  className="min-h-11 bg-indigo-600 active:bg-indigo-500 text-white font-bold px-5 py-3 rounded-full shadow-xl shadow-indigo-900/50 transition whitespace-nowrap"
+                >
+                  + Return
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => setFabOpen(o => !o)}
+              className="w-14 h-14 bg-indigo-600 active:scale-95 rounded-full shadow-xl shadow-indigo-900/50 flex items-center justify-center transition"
+              aria-label="Add return or rebate"
+            >
+              <PlusIcon className={`w-6 h-6 text-white transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
+            </button>
+          </div>
+        </>
+      )}
 
       {addMode === 'return' && (
         <AddReturn
@@ -360,15 +375,6 @@ export default function App() {
           onDone={() => setCelebration(null)}
         />
       )}
-    </div>
-  )
-}
-
-function Stat({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="bg-slate-900 rounded-xl px-3 py-3 text-center">
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-slate-500 text-sm mt-0.5">{label}</p>
     </div>
   )
 }

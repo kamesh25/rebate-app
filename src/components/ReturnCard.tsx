@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react'
 import type { ReturnItem } from '../types'
-import { daysLeft, urgency, parseLocalDate, storeAccent } from '../types'
+import { daysLeft, urgency, parseLocalDate } from '../types'
+import { MoreIcon } from './icons'
+import CardMoreMenu from './CardMoreMenu'
 
 const URGENCY_STYLES = {
-  safe:    { bar: 'bg-emerald-500', badge: 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50', border: 'border-slate-800' },
-  soon:    { bar: 'bg-amber-500',   badge: 'bg-amber-900/50 text-amber-300 border-amber-700/50',       border: 'border-amber-800/50' },
-  urgent:  { bar: 'bg-red-500',     badge: 'bg-red-900/50 text-red-300 border-red-700/50',             border: 'border-red-800/60' },
-  expired: { bar: 'bg-slate-600',   badge: 'bg-slate-800 text-slate-400 border-slate-700',             border: 'border-slate-700' },
+  safe:    { badge: 'bg-emerald-900/50 text-emerald-300 border-emerald-700/50', border: 'border-l-emerald-600' },
+  soon:    { badge: 'bg-amber-900/50 text-amber-300 border-amber-700/50',       border: 'border-l-amber-500' },
+  urgent:  { badge: 'bg-red-900/50 text-red-300 border-red-700/50',             border: 'border-l-red-500' },
+  expired: { badge: 'bg-slate-800 text-slate-400 border-slate-700',             border: 'border-l-slate-600' },
 }
 
 type Confirm = 'none' | 'returned' | 'delete'
@@ -20,6 +22,7 @@ interface Props {
 
 export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: Props) {
   const [confirm, setConfirm] = useState<Confirm>('none')
+  const [showMore, setShowMore] = useState(false)
   const [refundInput, setRefundInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const days = daysLeft(item)
@@ -31,15 +34,11 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
   const deadlineStr = deadlineDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   const daysLabel = item.returned
-    ? '✓ Returned'
+    ? 'Returned'
     : days < 0  ? `Expired ${Math.abs(days)}d ago`
-    : days === 0 ? '🚨 Due today!'
-    : days === 1 ? '⚠️ 1 day left'
+    : days === 0 ? 'Due today'
+    : days === 1 ? '1 day left'
     : `${days} days left`
-
-  const progress = item.returned
-    ? 100
-    : Math.max(0, Math.min(100, ((item.returnDays - days) / item.returnDays) * 100))
 
   function openReturnConfirm() {
     setConfirm('returned')
@@ -48,16 +47,7 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
   }
 
   return (
-    <div
-      className={`bg-slate-900 border ${styles.border} rounded-2xl overflow-hidden border-l-4`}
-      style={{ borderLeftColor: storeAccent(item.store) }}
-    >
-      {/* Progress bar */}
-      <div className="h-1.5 bg-slate-800">
-        <div className={`h-full ${styles.bar} transition-all`} style={{ width: `${progress}%` }} />
-      </div>
-
-      {/* Main row */}
+    <div className={`bg-slate-900 border border-slate-800 ${styles.border} border-l-4 rounded-2xl overflow-hidden`}>
       <div className="p-4">
         <div className="flex items-start justify-between gap-3">
 
@@ -70,9 +60,12 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
               </span>
             </div>
             <p className="text-slate-300 text-base leading-snug">{item.item}</p>
-            <p className="text-slate-500 text-sm mt-1.5">Return by {deadlineStr}</p>
+            <p className="text-slate-400 text-sm mt-1.5">
+              {item.returned ? 'Returned' : 'Return by'} {deadlineStr}
+              {!item.returned && item.pricePaid != null && item.pricePaid > 0 && ` · $${item.pricePaid.toFixed(2)}`}
+            </p>
             {item.returned && item.refundAmount != null && item.refundAmount > 0 && (
-              <p className="text-emerald-400 text-sm font-semibold mt-1">Got back ${item.refundAmount.toFixed(2)}</p>
+              <p className="text-emerald-400 text-sm font-semibold mt-1">+${item.refundAmount.toFixed(2)}</p>
             )}
             {item.notes && <p className="text-slate-500 text-sm mt-1 italic">{item.notes}</p>}
             {item.photo && (
@@ -85,60 +78,38 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
             )}
           </div>
 
-          {/* Right — action buttons (hidden during refund entry) */}
-          <div className="flex flex-col gap-2 shrink-0">
-            {confirm === 'none' && !item.returned && (
-              <>
+          {/* Right — actions */}
+          {confirm === 'none' && (
+            <div className="flex items-center gap-2 shrink-0">
+              {!item.returned && (
                 <button
                   onClick={openReturnConfirm}
                   className="min-h-11 bg-emerald-700 active:bg-emerald-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
                 >
-                  ✓ Done
+                  Done
                 </button>
-                <button
-                  onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
-                >
-                  Delete
-                </button>
-              </>
-            )}
+              )}
+              <button
+                onClick={() => setShowMore(true)}
+                className="min-h-11 min-w-11 flex items-center justify-center bg-slate-800 active:bg-slate-700 text-slate-400 rounded-xl transition"
+                aria-label="More options"
+              >
+                <MoreIcon className="w-5 h-5" />
+              </button>
+            </div>
+          )}
 
-            {confirm === 'delete' && (
-              <div className="flex flex-col gap-2 items-stretch">
-                <p className="text-slate-400 text-xs text-center">Remove this?</p>
-                <button onClick={onDelete} className="min-h-11 bg-red-700 active:bg-red-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl">
-                  Remove
-                </button>
-                <button onClick={() => setConfirm('none')} className="min-h-11 text-slate-500 text-sm py-2 text-center">
-                  Cancel
-                </button>
-              </div>
-            )}
-
-            {item.returned && confirm === 'none' && (
-              <>
-                <button
-                  onClick={onEdit}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-300 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => setConfirm('delete')}
-                  className="min-h-11 bg-slate-800 active:bg-slate-700 text-slate-500 text-sm font-semibold px-4 py-2.5 rounded-xl transition whitespace-nowrap"
-                >
-                  Remove
-                </button>
-              </>
-            )}
-          </div>
+          {confirm === 'delete' && (
+            <div className="flex flex-col gap-2 items-stretch shrink-0">
+              <p className="text-slate-400 text-xs text-center">Remove this?</p>
+              <button onClick={onDelete} className="min-h-11 bg-red-700 active:bg-red-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl">
+                Remove
+              </button>
+              <button onClick={() => setConfirm('none')} className="min-h-11 text-slate-500 text-sm py-2 text-center">
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -168,7 +139,7 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
               onClick={() => onMarkReturned(parseFloat(refundInput) || 0)}
               className="min-h-11 flex-1 bg-emerald-600 active:bg-emerald-500 text-white font-bold py-3 rounded-xl transition text-sm"
             >
-              {parseFloat(refundInput) > 0 ? `Save $${parseFloat(refundInput).toFixed(2)} 💰` : 'Mark returned'}
+              {parseFloat(refundInput) > 0 ? `Save $${parseFloat(refundInput).toFixed(2)}` : 'Mark returned'}
             </button>
             <button
               onClick={() => setConfirm('none')}
@@ -179,6 +150,13 @@ export default function ReturnCard({ item, onMarkReturned, onDelete, onEdit }: P
           </div>
         </div>
       )}
+
+      <CardMoreMenu
+        open={showMore}
+        onClose={() => setShowMore(false)}
+        onEdit={onEdit}
+        onDelete={() => setConfirm('delete')}
+      />
     </div>
   )
 }

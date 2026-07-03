@@ -3,6 +3,7 @@ import type { RebateItem } from '../types'
 import { STORE_POLICIES, todayString, parseLocalDate } from '../types'
 import { takeReceiptPhoto, pickReceiptPhoto } from '../hooks/useCamera'
 import { Capacitor } from '@capacitor/core'
+import { CameraIcon, GalleryIcon } from './icons'
 
 interface Props {
   onAdd: (item: RebateItem) => void
@@ -97,7 +98,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
 
         {/* Store picker */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Step 1 — Pick a store</label>
+          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Where did you buy it?</label>
           <div className="grid grid-cols-3 gap-2">
             {STORE_POLICIES.map(p => (
               <button
@@ -195,13 +196,13 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
             <div className="flex gap-2">
               {Capacitor.isNativePlatform() && (
                 <button type="button" onClick={handleTakePhoto} disabled={photoLoading}
-                  className="flex-1 bg-slate-800 border border-slate-700 hover:border-purple-500 text-slate-300 text-sm py-2.5 rounded-xl transition flex items-center justify-center gap-2">
-                  📷 Camera
+                  className="min-h-11 flex-1 bg-slate-800 border border-slate-700 hover:border-purple-500 text-slate-300 text-sm rounded-xl transition flex items-center justify-center gap-2">
+                  <CameraIcon className="w-4 h-4" /> Camera
                 </button>
               )}
               <button type="button" onClick={handlePickPhoto} disabled={photoLoading}
-                className="flex-1 bg-slate-800 border border-slate-700 hover:border-purple-500 text-slate-300 text-sm py-2.5 rounded-xl transition flex items-center justify-center gap-2">
-                {photoLoading ? '...' : '🖼 Gallery'}
+                className="min-h-11 flex-1 bg-slate-800 border border-slate-700 hover:border-purple-500 text-slate-300 text-sm rounded-xl transition flex items-center justify-center gap-2">
+                <GalleryIcon className="w-4 h-4" /> {photoLoading ? '...' : 'Gallery'}
               </button>
             </div>
           )}
@@ -216,13 +217,13 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
         )}
 
         {!mailByDate && store && item.trim() && (
-          <p className="text-amber-400 text-xs text-center -mt-2">👆 Enter the mail-by date from your rebate form</p>
+          <p className="text-amber-400 text-xs text-center -mt-2">Enter the mail-by date from your rebate form</p>
         )}
 
         <button
           onClick={handleSubmit}
           disabled={!isValid}
-          className="min-h-11 bg-purple-700 hover:bg-purple-600 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
+          className="min-h-11 bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
         >
           {isValid ? (editItem ? 'Update Rebate' : 'Save Rebate') : 'Fill in details to save'}
         </button>

@@ -3,6 +3,7 @@ import type { ReturnItem } from '../types'
 import { STORE_POLICIES, todayString, parseLocalDate } from '../types'
 import { takeReceiptPhoto, pickReceiptPhoto } from '../hooks/useCamera'
 import { Capacitor } from '@capacitor/core'
+import { CameraIcon, GalleryIcon } from './icons'
 
 interface Props {
   onAdd: (item: ReturnItem) => void
@@ -11,14 +12,18 @@ interface Props {
   editItem?: ReturnItem
 }
 
+type Step = 'quick' | 'details'
+
 export default function AddReturn({ onAdd, onClose, editItem }: Props) {
   const today = todayString()
   const editItemIsCustomStore = !!editItem && !STORE_POLICIES.some(p => p.store === editItem.store)
+  const [step, setStep] = useState<Step>('quick')
   const [store, setStore] = useState(editItemIsCustomStore ? 'Other' : editItem?.store ?? '')
   const [customStore, setCustomStore] = useState(editItemIsCustomStore ? editItem!.store : '')
   const [item, setItem] = useState(editItem?.item ?? '')
   const [purchaseDate, setPurchaseDate] = useState(editItem?.purchaseDate ?? today)
   const [customDays, setCustomDays] = useState(String(editItem?.returnDays ?? 30))
+  const [pricePaid, setPricePaid] = useState(editItem?.pricePaid != null ? String(editItem.pricePaid) : '')
   const [notes, setNotes] = useState(editItem?.notes ?? '')
   const [photo, setPhoto] = useState<string | null>(editItem?.photo ?? null)
   const [photoLoading, setPhotoLoading] = useState(false)
@@ -52,6 +57,8 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
     const days = parseInt(customDays)
     if (!days || days < 1) return
 
+    const priceValue = parseFloat(pricePaid)
+
     if (editItem) {
       onAdd({
         ...editItem,
@@ -61,6 +68,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
         returnDays: days,
         notes: notes.trim(),
         photo: photo ?? undefined,
+        pricePaid: priceValue > 0 ? priceValue : undefined,
         ...(editItem.returned ? { refundAmount: parseFloat(refundInput) || 0 } : {}),
       })
       return
@@ -75,19 +83,33 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
       notes: notes.trim(),
       returned: false,
       createdAt: new Date().toISOString(),
+      ...(priceValue > 0 ? { pricePaid: priceValue } : {}),
       ...(photo ? { photo } : {}),
     })
   }
 
   const storeName = store === 'Other' ? customStore.trim() : store
   const days = parseInt(customDays) || 0
-  const isValid = storeName && item.trim() && days > 0
+  const isValid = !!storeName && !!item.trim() && days > 0
 
   const deadline = parseLocalDate(purchaseDate)
   deadline.setDate(deadline.getDate() + (days || 0))
   const deadlineStr = isValid
-    ? deadline.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    : '—'
+    ? deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : null
+
+  const saveButton = (
+    <button
+      onClick={handleSubmit}
+      disabled={!isValid}
+      className="min-h-11 w-full bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition flex flex-col items-center leading-tight"
+    >
+      <span>{editItem ? 'Update Return' : 'Save Return'}</span>
+      {isValid && deadlineStr && (
+        <span className="text-emerald-100 text-xs font-normal mt-0.5">Reminds you before {deadlineStr}</span>
+      )}
+    </button>
+  )
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center" onClick={onClose}>
@@ -100,165 +122,194 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
         }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white">{editItem ? 'Edit Return' : 'Add Return'}</h2>
-          <button onClick={onClose} className="min-h-11 min-w-11 text-slate-500 hover:text-white text-xl leading-none transition flex items-center justify-center">×</button>
-        </div>
-
-        {/* Store picker */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Step 1 — Pick a store</label>
-          <div className="grid grid-cols-3 gap-2">
-            {STORE_POLICIES.map(p => (
-              <button
-                key={p.store}
-                onClick={() => handleStoreChange(p.store)}
-                className={`py-2 px-2 rounded-xl text-xs font-semibold transition border ${store === p.store ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500'}`}
-              >
-                {p.store}
-                <span className="block text-slate-400 font-normal text-xs">{p.days}d</span>
-              </button>
-            ))}
-          </div>
-          {store === 'Other' && (
-            <input
-              autoFocus
-              value={customStore}
-              onChange={e => setCustomStore(e.target.value)}
-              placeholder="Store name"
-              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 mt-1"
-            />
-          )}
-        </div>
-
-        {/* Item */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">What did you buy?</label>
-          <input
-            value={item}
-            onChange={e => setItem(e.target.value)}
-            placeholder="e.g. Blue running shoes, size 10"
-            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Purchase date + return window */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Purchase date</label>
-            <input
-              type="date"
-              value={purchaseDate}
-              onChange={e => setPurchaseDate(e.target.value)}
-              max={today}
-              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Return window</label>
-            <div className="flex gap-1.5">
-              <input
-                type="number"
-                value={customDays}
-                onChange={e => setCustomDays(e.target.value)}
-                placeholder="days"
-                min={1}
-                className="flex-1 bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-0"
-              />
-              <span className="flex items-center text-slate-500 text-sm">days</span>
+        {step === 'quick' ? (
+          <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white">{editItem ? 'Edit Return' : 'Add Return'}</h2>
+              <button onClick={onClose} className="min-h-11 min-w-11 text-slate-500 hover:text-white text-xl leading-none transition flex items-center justify-center">×</button>
             </div>
-            <p className="text-slate-600 text-xs">Typical policy — verify with your receipt</p>
-          </div>
-        </div>
 
-        {/* Notes */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Notes (optional)</label>
-          <input
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="e.g. Keep receipt in wallet, order #12345"
-            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        {/* Receipt photo */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Receipt Photo (optional)</label>
-          {photo ? (
-            <div className="relative">
-              <img src={photo} alt="Receipt" className="w-full max-h-48 object-cover rounded-xl border border-slate-700" />
-              <button
-                onClick={() => setPhoto(null)}
-                className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg"
-              >
-                Remove
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              {Capacitor.isNativePlatform() && (
-                <button
-                  type="button"
-                  onClick={handleTakePhoto}
-                  disabled={photoLoading}
-                  className="flex-1 bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 text-sm py-2.5 rounded-xl transition flex items-center justify-center gap-2"
-                >
-                  📷 Camera
-                </button>
+            {/* Store picker */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Where did you buy it?</label>
+              <div className="grid grid-cols-3 gap-2">
+                {STORE_POLICIES.map(p => (
+                  <button
+                    key={p.store}
+                    onClick={() => handleStoreChange(p.store)}
+                    className={`min-h-11 py-2 px-2 rounded-xl text-xs font-semibold transition border ${store === p.store ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500'}`}
+                  >
+                    {p.store}
+                    <span className="block text-slate-400 font-normal text-xs">{p.days}d</span>
+                  </button>
+                ))}
+              </div>
+              {store === 'Other' && (
+                <input
+                  autoFocus
+                  value={customStore}
+                  onChange={e => setCustomStore(e.target.value)}
+                  placeholder="Store name"
+                  className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 mt-1"
+                />
               )}
-              <button
-                type="button"
-                onClick={handlePickPhoto}
-                disabled={photoLoading}
-                className="flex-1 bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 text-sm py-2.5 rounded-xl transition flex items-center justify-center gap-2"
-              >
-                {photoLoading ? '...' : '🖼 Gallery'}
-              </button>
             </div>
-          )}
-        </div>
 
-        {/* Deadline preview */}
-        {isValid && (
-          <div className="bg-indigo-950/50 border border-indigo-800/50 rounded-xl px-4 py-3 flex items-center justify-between">
-            <span className="text-slate-400 text-sm">Return by</span>
-            <span className="text-indigo-300 font-bold">{deadlineStr}</span>
-          </div>
-        )}
-
-        {/* Refund amount — only editable once this return is already marked returned */}
-        {editItem?.returned && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">How much did you get back?</label>
-            <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-emerald-500 rounded-xl px-4 py-3 gap-2 transition">
-              <span className="text-emerald-400 font-bold text-xl">$</span>
+            {/* Item */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">What is it?</label>
               <input
-                type="number"
-                inputMode="decimal"
-                value={refundInput}
-                onChange={e => setRefundInput(e.target.value)}
-                placeholder="0.00"
-                className="bg-transparent text-white text-2xl font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
+                value={item}
+                onChange={e => setItem(e.target.value)}
+                placeholder="e.g. Blue running shoes, size 10"
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
-          </div>
-        )}
 
-        {!store && (
-          <p className="text-amber-400 text-xs text-center -mt-2">👆 Tap a store above first</p>
-        )}
-        {store && !item.trim() && (
-          <p className="text-amber-400 text-xs text-center -mt-2">👆 Enter what you bought</p>
-        )}
+            {!store && (
+              <p className="text-amber-400 text-xs text-center -mt-2">Pick a store above first</p>
+            )}
 
-        <button
-          onClick={handleSubmit}
-          disabled={!isValid}
-          className="min-h-11 bg-indigo-600 hover:bg-indigo-500 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl transition mb-2"
-        >
-          {isValid ? (editItem ? 'Update Return' : 'Save Return') : 'Fill in store + item to save'}
-        </button>
+            {saveButton}
+
+            <button
+              onClick={() => setStep('details')}
+              className="min-h-11 text-slate-500 text-sm text-center -mt-2"
+            >
+              Add price, photo or notes
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <button onClick={() => setStep('quick')} className="min-h-11 min-w-11 flex items-center justify-center text-slate-400 hover:text-white transition text-xl leading-none">←</button>
+              <h2 className="text-lg font-bold text-white">Details</h2>
+              <button onClick={() => setStep('quick')} className="min-h-11 px-2 flex items-center text-slate-400 hover:text-white text-sm font-semibold transition">Back</button>
+            </div>
+
+            <div className="bg-slate-800/60 rounded-xl px-4 py-3">
+              <p className="text-white font-semibold text-sm">{storeName || 'Store'} · {item || 'Item'}</p>
+              {deadlineStr && <p className="text-slate-500 text-xs mt-0.5">Return by {deadlineStr}</p>}
+            </div>
+
+            {/* Purchase date */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Purchase date</label>
+              <input
+                type="date"
+                value={purchaseDate}
+                onChange={e => setPurchaseDate(e.target.value)}
+                max={today}
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Price paid */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Price paid (optional)</label>
+              <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-indigo-500 rounded-xl px-4 py-3 gap-2 transition">
+                <span className="text-slate-400 font-bold text-lg">$</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={pricePaid}
+                  onChange={e => setPricePaid(e.target.value)}
+                  placeholder="0.00"
+                  className="bg-transparent text-white text-lg font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
+                />
+              </div>
+            </div>
+
+            {/* Return window stepper */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Return window</label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setCustomDays(String(Math.max(1, days - 1)))}
+                  className="min-h-11 min-w-11 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-white text-lg font-bold active:bg-slate-700 transition"
+                >
+                  −
+                </button>
+                <span className="flex-1 text-center text-white font-bold text-lg">{days} days</span>
+                <button
+                  onClick={() => setCustomDays(String(days + 1))}
+                  className="min-h-11 min-w-11 flex items-center justify-center bg-slate-800 border border-slate-700 rounded-xl text-white text-lg font-bold active:bg-slate-700 transition"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-slate-600 text-xs">Typical policy — verify against your receipt, holiday policies vary</p>
+            </div>
+
+            {/* Notes */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Notes (optional)</label>
+              <input
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                placeholder="e.g. Keep receipt in wallet, order #12345"
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            {/* Receipt photo */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Receipt photo (optional)</label>
+              {photo ? (
+                <div className="relative">
+                  <img src={photo} alt="Receipt" className="w-full max-h-48 object-cover rounded-xl border border-slate-700" />
+                  <button
+                    onClick={() => setPhoto(null)}
+                    className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  {Capacitor.isNativePlatform() && (
+                    <button
+                      type="button"
+                      onClick={handleTakePhoto}
+                      disabled={photoLoading}
+                      className="min-h-11 flex-1 bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 text-sm rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                      <CameraIcon className="w-4 h-4" /> Camera
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handlePickPhoto}
+                    disabled={photoLoading}
+                    className="min-h-11 flex-1 bg-slate-800 border border-slate-700 hover:border-indigo-500 text-slate-300 text-sm rounded-xl transition flex items-center justify-center gap-2"
+                  >
+                    <GalleryIcon className="w-4 h-4" /> {photoLoading ? '...' : 'Gallery'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Refund amount — only editable once this return is already marked returned */}
+            {editItem?.returned && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">How much did you get back?</label>
+                <div className="flex items-center bg-slate-800 border border-slate-700 focus-within:border-emerald-500 rounded-xl px-4 py-3 gap-2 transition">
+                  <span className="text-emerald-400 font-bold text-xl">$</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    value={refundInput}
+                    onChange={e => setRefundInput(e.target.value)}
+                    placeholder="0.00"
+                    className="bg-transparent text-white text-2xl font-bold flex-1 focus:outline-none placeholder-slate-600 w-0"
+                  />
+                </div>
+              </div>
+            )}
+
+            {saveButton}
+          </>
+        )}
       </div>
     </div>
   )

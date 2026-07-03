@@ -22,9 +22,9 @@ export default function Settings({ onClose, totalSaved }: { onClose: () => void;
 
         {/* Notification info */}
         <Section title="Notifications">
-          <Row icon="🔔" label="3 days before deadline" value="On" />
-          <Row icon="⚠️" label="1 day before deadline" value="On" />
-          <Row icon="🚨" label="Day of deadline" value="9:00 AM" />
+          <Row label="3 days before deadline" value="On" />
+          <Row label="1 day before deadline" value="On" />
+          <Row label="Day of deadline" value="9:00 AM" />
           <div className="px-4 py-3">
             <p className="text-slate-600 text-xs leading-relaxed">
               To change notification times, go to iPhone Settings → Notifications → ReturnIt
@@ -46,7 +46,7 @@ export default function Settings({ onClose, totalSaved }: { onClose: () => void;
 
         {/* Share */}
         <Section title="Spread the Word">
-          <Row icon="📤" label="Share ReturnIt" value="→" onTap={() => {
+          <Row label="Share ReturnIt" value="→" onTap={() => {
             if (navigator.share) {
               navigator.share({ title: 'ReturnIt', text: 'I use this app to track return deadlines so I never lose money — it\'s free!', url: 'https://returnit.app' })
             }
@@ -55,7 +55,7 @@ export default function Settings({ onClose, totalSaved }: { onClose: () => void;
 
         {/* About */}
         <Section title="About">
-          <Row icon="🔒" label="Privacy Policy" value="→" onTap={() => window.open('https://returnit-theta.vercel.app/privacy', '_blank')} />
+          <Row label="Privacy Policy" value="→" onTap={() => window.open('https://returnit-theta.vercel.app/privacy', '_blank')} />
           <Row label="Version" value="1.0.0" />
         </Section>
 
