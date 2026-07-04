@@ -150,7 +150,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
                   value={customStore}
                   onChange={e => setCustomStore(e.target.value)}
                   placeholder="Store name"
-                  className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 mt-1"
+                  className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 mt-1"
                 />
               )}
             </div>
@@ -162,7 +162,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
                 value={item}
                 onChange={e => setItem(e.target.value)}
                 placeholder="e.g. Blue running shoes, size 10"
-                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2.5 text-base text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -216,7 +216,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
                 value={purchaseDate}
                 onChange={e => setPurchaseDate(e.target.value)}
                 max={today}
-                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -248,7 +248,7 @@ export default function AddReturn({ onAdd, onClose, editItem }: Props) {
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="e.g. Keep receipt in wallet, order #12345"
-                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
 

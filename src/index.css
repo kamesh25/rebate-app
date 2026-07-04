@@ -10,6 +10,11 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Every <input>/<textarea> in this app must use text-base (16px) or
+   larger — iOS Safari/WKWebView auto-zooms the whole page on focus
+   for any input below 16px, which is what caused the "page shifted
+   right" bug. Never use text-sm/text-xs directly on a form field. */
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { overflow-x: hidden; max-width: 100vw; }
 body { background: #0f172a; font-family: system-ui, sans-serif; }

@@ -116,7 +116,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
               value={customStore}
               onChange={e => setCustomStore(e.target.value)}
               placeholder="Store or brand name"
-              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 mt-1"
+              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 mt-1"
             />
           )}
         </div>
@@ -128,7 +128,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
             value={item}
             onChange={e => setItem(e.target.value)}
             placeholder="e.g. Goodyear tires, Dyson V11"
-            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
           />
         </div>
 
@@ -157,7 +157,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
               value={purchaseDate}
               onChange={e => setPurchaseDate(e.target.value)}
               max={today}
-              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white focus:outline-none focus:border-purple-500"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -167,7 +167,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
               value={mailByDate}
               onChange={e => setMailByDate(e.target.value)}
               min={today}
-              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+              className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white focus:outline-none focus:border-purple-500"
             />
             <p className="text-slate-600 text-xs">Check your rebate form</p>
           </div>
@@ -180,7 +180,7 @@ export default function AddRebate({ onAdd, onClose, editItem }: Props) {
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="e.g. Cut UPC from box, form #12345"
-            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+            className="bg-slate-800 border border-slate-600 rounded-xl px-3 py-2 text-base text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
           />
         </div>
 
