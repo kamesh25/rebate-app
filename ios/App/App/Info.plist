@@ -55,5 +55,7 @@
 	<string>ReturnIt uses your camera to photograph receipts so you have proof of purchase when returning items.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ReturnIt accesses your photos so you can attach a receipt image to your return reminders.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
